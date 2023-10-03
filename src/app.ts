@@ -1,6 +1,6 @@
 import express from "express";
 import 'dotenv/config'
-import connect from "./utils/connect";
+import routes from "./routes";
 
 const port = process.env.PORT
 
@@ -11,7 +11,5 @@ app.use(express.json())
 app.listen(port, () => {
     console.log(`App is running on port ${port}`)
 
-    const pool = connect()
-
-    if (pool) console.log("Connected to db")
+    routes(app)
 })
