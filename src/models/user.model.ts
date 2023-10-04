@@ -5,8 +5,8 @@ export interface UserInput {
     password: string
 }
 
-export default interface User extends RowDataPacket {
+export interface User extends RowDataPacket {
     userId: number,
     email: string,
-    password: string
+    passwordHash: string
 }
