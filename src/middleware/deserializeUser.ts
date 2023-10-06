@@ -13,6 +13,7 @@ export async function deserializeUser(req: Request, res: Response, next: NextFun
     }
 
     const { decoded } = verifyJwt(accessToken);
+    console.log(decoded)
 
     if (decoded) {
         res.locals.user = decoded;

@@ -1,6 +1,5 @@
 import { ResultSetHeader } from "mysql2";
 import bcrypt from "bcrypt"
-import "dotenv/config"
 import { UserInput, User } from "../models/user.model";
 import pool from "../utils/connect";
 import { signJwt } from "../utils/jwt.utils";
@@ -35,11 +34,11 @@ export async function loginUser(input: UserInput) {
             throw new Error("Incorrect password.")
         }
 
-        const token = signJwt({ user_id: user.user_id, email: user.email}, {
+        const token = signJwt({ userId: user.user_id, email: user.email}, {
             expiresIn: "15m"
         })
 
-        return { user: { user_id: user.user_id, email: user.email }, accessToken: token}
+        return { user: { userId: user.user_id, email: user.email }, accessToken: token}
     } catch (err: any) {
         throw new Error(err)
     }
@@ -49,7 +48,7 @@ export async function createUser(input: UserInput) {
     try {
         const existingUser = await getUserByEmail(input.email)
         
-        const id = Date.now()
+        const id = Date.now().toString()
     
         if (existingUser) {
             throw new Error("User already exists.")
