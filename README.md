@@ -5,4 +5,5 @@ Technologies used to create the backend:
   - Typescript
   - Node.js
   - Express
+  - Zod
   - MySQL
