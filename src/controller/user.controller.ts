@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { createUser, loginUser } from "../service/user.service";
 import { CreateUserInput, LoginUserInput } from "../schema/user.schema";
 

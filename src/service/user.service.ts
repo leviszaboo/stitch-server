@@ -22,7 +22,8 @@ export async function getUserByEmail(email: string) {
 export async function loginUser(input: UserInput) {
     try {
         const user = await getUserByEmail(input.email)
-        const privateKey = process.env.JWT_PRIVATE_KEY
+
+        console.log(user)
 
         if (!user) {
             throw new Error("User not found.")
@@ -34,11 +35,11 @@ export async function loginUser(input: UserInput) {
             throw new Error("Incorrect password.")
         }
 
-        const token = signJwt({ userId: user.userId, email: user.email}, privateKey!, {
+        const token = signJwt({ user_id: user.user_id, email: user.email}, {
             expiresIn: "15m"
         })
 
-        return { user: { userId: user.userId, email: user.email }, accessToken: token}
+        return { user: { user_id: user.user_id, email: user.email }, accessToken: token}
     } catch (err: any) {
         throw new Error(err)
     }
@@ -65,9 +66,9 @@ export async function createUser(input: UserInput) {
             const newlyCreatedUser = await getUserByEmail(input.email)
 
             if (newlyCreatedUser) {
-               return { userId: newlyCreatedUser.userId, email: newlyCreatedUser.email }
+               return { user_id: newlyCreatedUser.user_id, email: newlyCreatedUser.email }
             } else {
-                throw new Error("Failed to retrieve the newly created user.");
+                throw new Error("Failed to retrieve the user.");
             }
         } else {
             throw new Error("Failed to insert the user.");

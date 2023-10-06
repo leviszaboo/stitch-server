@@ -6,7 +6,7 @@ export interface UserInput {
 }
 
 export interface User extends RowDataPacket {
-    userId: number,
+    user_id: string,
     email: string,
     passwordHash: string
 }
