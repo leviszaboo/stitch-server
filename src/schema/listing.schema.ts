@@ -26,6 +26,17 @@ const payload = {
     })
 }
 
+const params = {
+    params: object({
+        listing_id: string({
+            required_error: "Listing ID is required."
+        })
+    })
+}
+
 export const createListingSchema = object({ ...payload })
 
-export type CreateListingInput = TypeOf<typeof createListingSchema>
+export const getListingByIdSchema = object({ ...params })
+
+export type GetListingByIdInput = TypeOf<typeof getListingByIdSchema>;
+export type CreateListingInput = TypeOf<typeof createListingSchema>;

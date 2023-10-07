@@ -1,10 +1,10 @@
 import { Express, Request, Response } from "express"
-import { createUserHandler, loginUserHandler } from "./controller/user.controller"
+import { createUserHandler, getUserByIdHandler, loginUserHandler } from "./controller/user.controller"
 import validateResource from "./middleware/validateResource"
-import { createUserSchema, loginUserSchema } from "./schema/user.schema"
-import { createListingHandler, getAllListingsHandler } from "./controller/listing.controller"
+import { createUserSchema, getUserByIdSchema, loginUserSchema } from "./schema/user.schema"
+import { createListingHandler, getAllListingsHandler, getListingByIdHandler, getListingsByUserIdHandler } from "./controller/listing.controller"
 import requireUser from "./middleware/requireUser"
-import { createListingSchema } from "./schema/listing.schema"
+import { createListingSchema, getListingByIdSchema } from "./schema/listing.schema"
 
 export default function routes(app: Express) {
     app.get("/healthcheck", (_req: Request, res: Response) => res.sendStatus(200))
@@ -13,11 +13,13 @@ export default function routes(app: Express) {
 
     app.post("/api/users/login", validateResource(loginUserSchema), loginUserHandler)
 
+    app.get("/api/users/:user_id", validateResource(getUserByIdSchema), getUserByIdHandler)
+
+    app.get("/api/users/:user_id/listings", validateResource(getUserByIdSchema), getListingsByUserIdHandler)
+
     app.get("/api/listings", getAllListingsHandler)
 
-    app.get("/api/listings/:id")
-
-    app.get("/api/listings/:userid")
+    app.get("/api/listings/:listing_id", validateResource(getListingByIdSchema), getListingByIdHandler)
 
     app.post("/api/listings", [requireUser, validateResource(createListingSchema)], createListingHandler)
 }

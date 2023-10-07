@@ -3,6 +3,29 @@ import bcrypt from "bcrypt"
 import { UserInput, User } from "../models/user.model";
 import pool from "../utils/connect";
 import { signJwt } from "../utils/jwt.utils";
+import NotFoundError from "../errors/NotFoundError";
+
+export async function getUserById(id: string) {
+    try {
+        const [user] = await pool.query<User[]>(
+            "SELECT * FROM users WHERE user_id = ?",
+            [id]
+        ) 
+
+        if (!user[0]) {
+            throw new NotFoundError("User not found")
+        }
+
+        return { user_id: user[0].user_id, email: user[0].email }
+
+    } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            throw err
+        } else {
+            throw new Error(err)
+        }
+    }
+}
 
 export async function getUserByEmail(email: string) {
     try {
@@ -11,10 +34,18 @@ export async function getUserByEmail(email: string) {
             [email]
         ) 
 
+        if (!user[0]) {
+            throw new NotFoundError("User not found")
+        }
+
         return user[0]
 
     } catch(err: any) {
-        throw new Error(err)
+        if (err instanceof NotFoundError) {
+            throw err
+        } else {
+            throw new Error(err)
+        }
     }
 }
 

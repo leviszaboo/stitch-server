@@ -28,5 +28,16 @@ export const createUserSchema = object({
     })
 })
 
+const params = {
+    params: object({
+        user_id: string({
+            required_error: "Listing ID is required."
+        })
+    })
+}
+
+export const getUserByIdSchema = object({ ...params })
+
+export type GetUserByIdInput = TypeOf<typeof getUserByIdSchema>;
 export type LoginUserInput = TypeOf<typeof loginUserSchema>
 export type CreateUserInput = TypeOf<typeof createUserSchema>

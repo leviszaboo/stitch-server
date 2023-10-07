@@ -1,7 +1,39 @@
 import { Request, Response } from "express";
-import { createListing, getAllListings } from "../service/listing.service";
-import { CreateListingInput } from "../schema/listing.schema";
+import { createListing, getAllListings, getListingById, getListingsByUserId } from "../service/listing.service";
+import { CreateListingInput, GetListingByIdInput } from "../schema/listing.schema";
 import { ListingInput } from "../models/listing.model";
+import NotFoundError from "../errors/NotFoundError";
+import { GetUserByIdInput } from "../schema/user.schema";
+
+export async function getListingByIdHandler(req: Request<GetListingByIdInput['params']>, res: Response) {
+    try {
+        const listingId = req.params.listing_id 
+
+        const listing = await getListingById(listingId);
+
+        return res.send(listing)
+    } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            res.status(404).send(err.message)
+        } else {
+            res.sendStatus(500)
+        }
+    }
+}
+
+export async function getListingsByUserIdHandler(req: Request<GetUserByIdInput['params']>, res: Response) {
+    try {
+        const userId = req.params.user_id
+        const listings = await getListingsByUserId(userId);
+        return res.send(listings)
+    } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            res.status(404).send(err.message)
+        } else {
+            res.sendStatus(500)
+        }
+    }
+}
 
 export async function getAllListingsHandler(_req: Request, res: Response) {
     try {

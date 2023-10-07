@@ -1,20 +1,7 @@
 import { ResultSetHeader } from "mysql2";
 import pool from "../utils/connect";
 import { Listing, ListingInput } from "../models/listing.model";
-
-export async function getListingById(id: string) {
-    try {
-        const [listing] = await pool.query<Listing[]>(
-            "SELECT * FROM listings WHERE listing_id = ?",
-            [id]
-        ) 
-
-        return listing[0]
-
-    } catch(err: any) {
-        throw new Error(err)
-    }
-}
+import NotFoundError from "../errors/NotFoundError";
 
 export async function getAllListings() {
     try {
@@ -25,6 +12,52 @@ export async function getAllListings() {
         return listings
     } catch(err: any) {
         throw new Error(err)
+    }
+}
+
+export async function getListingById(id: string) {
+    try {
+        const [listing] = await pool.query<Listing[]>(
+            "SELECT * FROM listings WHERE listing_id = ?",
+            [id]
+        ) 
+        
+        if (!listing[0]) {
+            throw new NotFoundError("Listing not found")
+        }
+
+        return listing[0]
+
+    } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            throw err
+        } else {
+            throw new Error(err)
+        }
+    }
+}
+
+export async function getListingsByUserId(userId: string) {
+    try {
+        const [listings] = await pool.query<Listing[]>(
+            "SELECT * FROM listings WHERE user_id = ?",
+            [userId]
+        ) 
+
+        console.log(listings)
+
+        if (!listings || listings.length === 0) {
+            throw new NotFoundError("Listings not found")
+        }
+
+        return listings
+
+    } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            throw err
+        } else {
+            throw new Error(err)
+        }
     }
 }
 

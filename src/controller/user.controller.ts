@@ -1,6 +1,21 @@
 import { Request, Response } from "express";
-import { createUser, loginUser } from "../service/user.service";
-import { CreateUserInput, LoginUserInput } from "../schema/user.schema";
+import { createUser, getUserById, loginUser } from "../service/user.service";
+import { CreateUserInput, GetUserByIdInput, LoginUserInput } from "../schema/user.schema";
+import NotFoundError from "../errors/NotFoundError";
+
+export async function getUserByIdHandler(req: Request<GetUserByIdInput['params']>, res: Response) {
+    try {
+        const userId = req.params.user_id
+        const user = await getUserById(userId)
+        return res.send(user)
+    } catch(err) {
+        if (err instanceof NotFoundError) {
+            res.status(404).send(err.message)
+        } else {
+            res.sendStatus(500)
+        }
+    }
+}
 
 export async function loginUserHandler(req: Request<{}, {}, LoginUserInput['body']>, res: Response) {
     try {
