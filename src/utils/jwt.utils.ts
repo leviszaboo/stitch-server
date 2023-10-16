@@ -1,22 +1,32 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import "dotenv/config"
 
-const privateKey = process.env.JWT_PRIVATE_KEY
-const publicKey = process.env.JWT_PUBLIC_KEY
+const accessTokenPrivateKey = process.env.ACT_PUBLIC_KEY!;
+const accessTokenPublicKey = process.env.ACT_PUBLIC_KEY!;
+const refreshTokenPrivateKey = process.env.REFRESH_PRIVATE_KEY!;
+const refreshTokenPublicKey = process.env.REFRESH_PRIVATE_KEY!;
+
+interface UserPayload extends JwtPayload {
+    userId: string,
+    email: string
+}
 
 export function signJwt(
     object: Object,
-    options?: jwt.SignOptions | undefined
+    tokenType: "refresh" | "access",
+    options?: jwt.SignOptions | undefined,
 ) {
-    return jwt.sign(object, privateKey!, {
+    const key = tokenType === "access" ? accessTokenPrivateKey : refreshTokenPrivateKey;
+    return jwt.sign(object, key, {
         ...(options && options),
         algorithm: "RS256"
     })
 }
 
-export function verifyJwt(token: string) {
+export function verifyJwt(token: string, tokenType: "refresh" | "access",) {
     try {
-        const decoded = jwt.verify(token, publicKey!);
+        const key = tokenType === "access" ? accessTokenPublicKey : refreshTokenPublicKey; 
+        const decoded = jwt.verify(token, key) as UserPayload
         return {
             valid: true,
             expired: false,
@@ -29,5 +39,5 @@ export function verifyJwt(token: string) {
             expired: e.message === "jwt expired",
             decoded: null,
         };
-      }
+    }
 }

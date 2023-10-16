@@ -8,7 +8,6 @@ import { GetUserByIdInput } from "../schema/user.schema";
 export async function getListingByIdHandler(req: Request<GetListingByIdInput['params']>, res: Response) {
     try {
         const listingId = req.params.listing_id 
-
         const listing = await getListingById(listingId);
 
         return res.send(listing)
@@ -25,6 +24,7 @@ export async function getListingsByUserIdHandler(req: Request<GetUserByIdInput['
     try {
         const userId = req.params.user_id
         const listings = await getListingsByUserId(userId);
+
         return res.send(listings)
     } catch(err: any) {
         if (err instanceof NotFoundError) {
@@ -38,6 +38,7 @@ export async function getListingsByUserIdHandler(req: Request<GetUserByIdInput['
 export async function getAllListingsHandler(_req: Request, res: Response) {
     try {
         const listings = await getAllListings()
+
         return res.send(listings)
     } catch(err: any) {
         res.sendStatus(500);
@@ -47,7 +48,6 @@ export async function getAllListingsHandler(_req: Request, res: Response) {
 export async function createListingHandler(req: Request<{}, {}, CreateListingInput['body']>, res: Response) {
     try {
         const userId = res.locals.user.userId 
-
         const body = req.body
 
         const input: ListingInput = {

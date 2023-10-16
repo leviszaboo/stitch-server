@@ -2,7 +2,7 @@ import { ResultSetHeader } from "mysql2";
 import bcrypt from "bcrypt"
 import { UserInput, User } from "../models/user.model";
 import pool from "../utils/connect";
-import { signJwt } from "../utils/jwt.utils";
+import { signJwt, verifyJwt } from "../utils/jwt.utils";
 import NotFoundError from "../errors/NotFoundError";
 
 export async function getUserById(id: string) {
@@ -49,14 +49,23 @@ export async function getUserByEmail(email: string) {
     }
 }
 
-export async function loginUser(input: UserInput) {
+interface AuthResponse {
+    user: {
+      userId: string;
+      email: string;
+    };
+    accessToken: string;
+    refreshToken: string;
+  }
+
+export async function loginUser(input: UserInput): Promise<AuthResponse> {
     try {
         const user = await getUserByEmail(input.email)
 
         console.log(user)
 
         if (!user) {
-            throw new Error("User not found.")
+            throw new NotFoundError("User not found.")
         }
 
         const passwordMatch = await bcrypt.compare(input.password, user.passwordHash)
@@ -65,13 +74,39 @@ export async function loginUser(input: UserInput) {
             throw new Error("Incorrect password.")
         }
 
-        const token = signJwt({ userId: user.user_id, email: user.email}, {
-            expiresIn: "15m"
-        })
+        const token = signJwt(
+            { 
+                userId: user.user_id, email: user.email
+            }, 
+            "access",
+            {
+                expiresIn: "5m"
+            }
+        )
 
-        return { user: { userId: user.user_id, email: user.email }, accessToken: token}
+        const refreshToken = signJwt(
+            { userId: user.user_id }, 
+            "refresh",
+            {
+                expiresIn: "30m"
+            }
+        )
+
+        return { 
+            user: { 
+                userId: user.user_id, 
+                email: user.email 
+            }, 
+            accessToken: token, 
+            refreshToken: refreshToken
+        }
+
     } catch (err: any) {
-        throw new Error(err)
+        if (err instanceof NotFoundError) {
+            throw err
+        } else {
+            throw new Error(err)
+        }
     }
 }
 
@@ -107,3 +142,40 @@ export async function createUser(input: UserInput) {
         throw new Error(err)
     }
 }   
+
+export async function reissueAccessToken({ refreshToken }: { refreshToken: string }) {
+    const { decoded } = verifyJwt(refreshToken, "refresh");
+
+    if (!decoded) return { 
+        newAccessToken: null,
+        newRefreshToken: null
+    };
+
+    const user = await getUserById(decoded.userId);
+
+    if (!user) return { 
+        newAccessToken: null,
+        newRefreshToken: null
+    }
+
+    const newRefreshToken = signJwt(
+        { userId: user.user_id }, 
+        "refresh",
+        {
+            expiresIn: "30m"
+        }
+    )
+    
+    const newAccessToken = signJwt(
+        { userId: user.user_id, email: user.email}, 
+        "access",
+        { 
+            expiresIn: "5m" 
+        }
+    )
+
+    return { 
+        newAccessToken: newAccessToken,
+        newRefreshToken: newRefreshToken
+    }
+}
