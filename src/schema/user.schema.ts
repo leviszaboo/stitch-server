@@ -31,7 +31,7 @@ export const createUserSchema = object({
 const params = {
     params: object({
         user_id: string({
-            required_error: "Listing ID is required."
+            required_error: "User ID is required."
         })
     })
 }

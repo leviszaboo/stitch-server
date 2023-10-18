@@ -56,6 +56,8 @@ export async function createListingHandler(req: Request<{}, {}, CreateListingInp
             listing_date: new Date()
         }
 
+        //axios.post(/api/images, images)
+
         const listing = await createListing(input)
 
         return res.send(listing)

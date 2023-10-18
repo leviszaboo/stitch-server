@@ -1,10 +1,10 @@
 import jwt, { JwtPayload } from "jsonwebtoken";
-import "dotenv/config"
+import config from "config";
 
-const accessTokenPrivateKey = process.env.ACT_PUBLIC_KEY!;
-const accessTokenPublicKey = process.env.ACT_PUBLIC_KEY!;
-const refreshTokenPrivateKey = process.env.REFRESH_PRIVATE_KEY!;
-const refreshTokenPublicKey = process.env.REFRESH_PRIVATE_KEY!;
+const accessTokenPrivateKey = config.get<string>("jwtAccessPrivateKey");
+const accessTokenPublicKey = config.get<string>("jwtAccessPublicKey");
+const refreshTokenPrivateKey = config.get<string>("jwtRefreshPrivateKey");
+const refreshTokenPublicKey = config.get<string>("jwtRefreshPrivateKey");
 
 interface UserPayload extends JwtPayload {
     userId: string,

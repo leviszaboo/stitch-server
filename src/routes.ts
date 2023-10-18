@@ -22,4 +22,6 @@ export default function routes(app: Express) {
     app.get("/api/listings/:listing_id", validateResource(getListingByIdSchema), getListingByIdHandler)
 
     app.post("/api/listings", [requireUser, validateResource(createListingSchema)], createListingHandler)
+
+    app.post("/test", (req, res, next) => {})
 }

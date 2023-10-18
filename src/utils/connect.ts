@@ -1,11 +1,11 @@
 import mysql from "mysql2"
-import "dotenv/config"
+import config from "config"
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-}).promise();
+    host: config.get<string>("dbHost"),
+    user: config.get<string>("dbUser"),
+    password: config.get<string>("dbPassword"),
+    database: config.get<string>("dbName")
+}).promise()
 
 export default pool
