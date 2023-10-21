@@ -58,9 +58,9 @@ export async function createListingHandler(req: Request<{}, {}, CreateListingInp
 
         //axios.post(/api/images, images)
 
-        const listing = await createListing(input)
+        await createListing(input)
 
-        return res.send(listing)
+        return res.sendStatus(200)
     } catch (err: any) {
         res.status(409).send(err.message)
     }

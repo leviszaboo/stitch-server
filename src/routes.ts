@@ -7,21 +7,21 @@ import requireUser from "./middleware/requireUser"
 import { createListingSchema, getListingByIdSchema } from "./schema/listing.schema"
 
 export default function routes(app: Express) {
-    app.get("/healthcheck", (_req: Request, res: Response) => res.sendStatus(200))
+    app.get("/healthcheck", (_req: Request, res: Response) => res.sendStatus(200));
 
-    app.post("/api/users/register", validateResource(createUserSchema), createUserHandler)
+    app.post("/api/users/register", validateResource(createUserSchema), createUserHandler);
 
-    app.post("/api/users/login", validateResource(loginUserSchema), loginUserHandler)
+    app.post("/api/users/login", validateResource(loginUserSchema), loginUserHandler);
 
-    app.get("/api/users/:user_id", validateResource(getUserByIdSchema), getUserByIdHandler)
+    app.get("/api/users/:user_id", validateResource(getUserByIdSchema), getUserByIdHandler);
 
-    app.get("/api/users/:user_id/listings", validateResource(getUserByIdSchema), getListingsByUserIdHandler)
+    app.get("/api/users/:user_id/listings", validateResource(getUserByIdSchema), getListingsByUserIdHandler);
 
-    app.get("/api/listings", getAllListingsHandler)
+    app.get("/api/listings", getAllListingsHandler);
 
-    app.get("/api/listings/:listing_id", validateResource(getListingByIdSchema), getListingByIdHandler)
+    app.get("/api/listings/:listing_id", validateResource(getListingByIdSchema), getListingByIdHandler);
 
-    app.post("/api/listings", [requireUser, validateResource(createListingSchema)], createListingHandler)
+    app.post("/api/listings", [requireUser, validateResource(createListingSchema)], createListingHandler);
 
-    app.post("/test", (req, res, next) => {})
+    app.post("api/test", (req, res) => {return res.sendStatus(200)})
 }

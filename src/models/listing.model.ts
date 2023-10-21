@@ -12,6 +12,15 @@ export interface ListingInput {
     category_id: number;
 }
 
-export interface Listing extends RowDataPacket, ListingInput {
+export interface ListingTextData extends RowDataPacket, ListingInput {
     listing_id: string; 
+}
+
+export interface ListingReturnData extends ListingTextData {
+    image_url: string
+}
+
+export interface Listing extends ListingInput {
+    listing_id: string; 
+    imageUrls: string[]; 
 }

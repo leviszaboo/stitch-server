@@ -1,65 +1,79 @@
 import { ResultSetHeader } from "mysql2";
 import pool from "../utils/connect";
-import { Listing, ListingInput } from "../models/listing.model";
+import { Listing, ListingInput, ListingReturnData } from "../models/listing.model";
 import NotFoundError from "../errors/NotFoundError";
+import { createListingReturnObject } from "../utils/listing.utils";
 
-export async function getAllListings() {
+export async function getAllListings(): Promise<Listing | Listing[]> {
     try {
-        const [listings] = await pool.query<Listing[]>(
-            `SELECT * FROM listings`
-        )
+        const [results] = await pool.query<ListingReturnData[]>(
+            `SELECT listings.*, images.image_url
+            FROM listings
+            LEFT JOIN images ON listings.listing_id = images.listing_id
+            ORDER BY listings.listing_date DESC;`
+        );
 
-        return listings
-    } catch(err: any) {
-        throw new Error(err)
+        const listings = createListingReturnObject(results)
+
+        return listings;
+    } catch (err: any) {
+        throw new Error(err);
     }
 }
 
-export async function getListingById(id: string) {
+export async function getListingById(id: string): Promise<Listing | Listing[]> {
     try {
-        const [listing] = await pool.query<Listing[]>(
-            "SELECT * FROM listings WHERE listing_id = ?",
+        const [results] = await pool.query<ListingReturnData[]>(
+            `SELECT listings.*, images.image_url
+            FROM listings
+            LEFT JOIN images ON listings.listing_id = images.listing_id
+            WHERE listings.listing_id = ?`,
             [id]
-        ) 
-        
-        if (!listing[0]) {
-            throw new NotFoundError("Listing not found")
+        );
+
+        if (!results || results.length === 0) {
+            throw new NotFoundError("Listing not found");
         }
 
-        return listing[0]
+        const listing = createListingReturnObject(results)
 
-    } catch(err: any) {
+        return listing;
+    } catch (err: any) {
         if (err instanceof NotFoundError) {
-            throw err
+            throw err;
         } else {
-            throw new Error(err)
+            throw new Error(err);
         }
     }
 }
 
-export async function getListingsByUserId(userId: string) {
+
+export async function getListingsByUserId(userId: string): Promise<Listing | Listing[]> {
     try {
-        const [listings] = await pool.query<Listing[]>(
-            "SELECT * FROM listings WHERE user_id = ?",
+        const [results] = await pool.query<ListingReturnData[]>(
+            `SELECT listings.*, images.image_url
+            FROM listings
+            LEFT JOIN images ON listings.listing_id = images.listing_id
+            WHERE listings.user_id = ?`,
             [userId]
-        ) 
+        );
 
-        console.log(listings)
-
-        if (!listings || listings.length === 0) {
-            throw new NotFoundError("Listings not found")
+        if (!results || results.length === 0) {
+            throw new NotFoundError("Listings not found");
         }
 
-        return listings
+        const listings = createListingReturnObject(results)
 
-    } catch(err: any) {
+        return listings;
+    } catch (err: any) {
         if (err instanceof NotFoundError) {
-            throw err
+            throw err;
         } else {
-            throw new Error(err)
+            throw new Error(err);
         }
     }
 }
+    
 
 export async function createListing(input: ListingInput) {
     try {
@@ -78,7 +92,7 @@ export async function createListing(input: ListingInput) {
             input.category_id 
         ]
     
-        const [listingInsertInput] = await pool.query<ResultSetHeader>(
+        const [listingInsertResult] = await pool.query<ResultSetHeader>(
             `INSERT INTO listings (
                 listing_id,
                 title,
@@ -95,7 +109,7 @@ export async function createListing(input: ListingInput) {
             values
         )
 
-        if (listingInsertInput.affectedRows === 1) {
+        if (listingInsertResult.affectedRows === 1) {
             const newlyCreatedListing = await getListingById(listing_id)
 
             if (newlyCreatedListing) {
