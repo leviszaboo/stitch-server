@@ -10,7 +10,7 @@ export async function deserializeUser(req: Request, res: Response, next: NextFun
         ""
     );
 
-    const refreshToken = req.cookies.jwt
+    const refreshToken = req.cookies.refreshToken;
     
     if (!accessToken) {
         return next();
@@ -25,6 +25,7 @@ export async function deserializeUser(req: Request, res: Response, next: NextFun
 
     if (expired && refreshToken) {
         const { newAccessToken, newRefreshToken } = await reissueAccessToken(refreshToken);
+        console.log("reissued acccesstoken: ", newAccessToken)
 
         if (!newAccessToken || !newRefreshToken) {
             return next()
@@ -33,6 +34,9 @@ export async function deserializeUser(req: Request, res: Response, next: NextFun
         res.setHeader("Authorization", `Bearer ${newAccessToken}`);
 
         setRefreshToken(res, newRefreshToken);
+
+        const result = verifyJwt(newAccessToken, "access");
+        res.locals.user = result.decoded;
     }
 
     return next()

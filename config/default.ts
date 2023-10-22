@@ -13,5 +13,7 @@ export default {
     jwtAccessPrivateKey: process.env.ACT_PRIVATE_KEY,
     jwtRefreshPrivateKey: process.env.REFRESH_PRIVATE_KEY,
     jwtAccessPublicKey: process.env.ACT_PUBLIC_KEY,
-    jwtRefreshPublicKey: process.env.REFRESH_PUBLIC_KEY
+    jwtRefreshPublicKey: process.env.REFRESH_PUBLIC_KEY,
+    accessTokenExpiresIn: "5m",
+    refreshTokenExpiresIn: "30m"
 }

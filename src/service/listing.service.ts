@@ -4,10 +4,10 @@ import { Listing, ListingInput, ListingReturnData } from "../models/listing.mode
 import NotFoundError from "../errors/NotFoundError";
 import { createListingReturnObject } from "../utils/listing.utils";
 
-export async function getAllListings(): Promise<Listing | Listing[]> {
+export async function getListings(start: number = 0, end: number = 10): Promise<Listing | Listing[]> {
     try {
         const [results] = await pool.query<ListingReturnData[]>(
-            `SELECT listings.*, images.image_url
+            `SELECT listings.*, images.s3_key
             FROM listings
             LEFT JOIN images ON listings.listing_id = images.listing_id
             ORDER BY listings.listing_date DESC;`
@@ -24,12 +24,14 @@ export async function getAllListings(): Promise<Listing | Listing[]> {
 export async function getListingById(id: string): Promise<Listing | Listing[]> {
     try {
         const [results] = await pool.query<ListingReturnData[]>(
-            `SELECT listings.*, images.image_url
+            `SELECT listings.*, images.s3_key
             FROM listings
             LEFT JOIN images ON listings.listing_id = images.listing_id
             WHERE listings.listing_id = ?`,
             [id]
         );
+
+        console.log("get by id results: ", results)
 
         if (!results || results.length === 0) {
             throw new NotFoundError("Listing not found");
@@ -51,7 +53,7 @@ export async function getListingById(id: string): Promise<Listing | Listing[]> {
 export async function getListingsByUserId(userId: string): Promise<Listing | Listing[]> {
     try {
         const [results] = await pool.query<ListingReturnData[]>(
-            `SELECT listings.*, images.image_url
+            `SELECT listings.*, images.s3_key
             FROM listings
             LEFT JOIN images ON listings.listing_id = images.listing_id
             WHERE listings.user_id = ?`,
@@ -77,10 +79,8 @@ export async function getListingsByUserId(userId: string): Promise<Listing | Lis
 
 export async function createListing(input: ListingInput) {
     try {
-        const listing_id = Date.now().toString()
-
         const values = [
-            listing_id,
+            input.listing_id,
             input.title,
             input.description,
             input.size,
@@ -110,8 +110,9 @@ export async function createListing(input: ListingInput) {
         )
 
         if (listingInsertResult.affectedRows === 1) {
-            const newlyCreatedListing = await getListingById(listing_id)
-
+            console.log("listing id: ", input.listing_id)
+            const newlyCreatedListing = await getListingById(input.listing_id)
+            console.log("created listing: ", newlyCreatedListing)
             if (newlyCreatedListing) {
                 return newlyCreatedListing
             } else {

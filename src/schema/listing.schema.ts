@@ -1,4 +1,4 @@
-import { object, number, string, TypeOf } from "zod";
+import { object, number, string, TypeOf, array } from "zod";
 
 const payload = {
     body: object({
@@ -12,18 +12,28 @@ const payload = {
             required_error: "Size is required"
         }),
         brand: string({
-            required_error: "Size is required"
+            required_error: "Brand is required"
         }),
         item_condition: string({
-            required_error: "Size is required"
+            required_error: "Condition is required"
         }),
-        price: number({
-            required_error: "Size is required"
+        price: string({
+            required_error: "Price is required"
         }),
-        category_id: number({
-            required_error: "Size is required"
+        category_id: string({
+            required_error: "Category is required"
         }),
     })
+}
+
+const files = {
+    files: object({
+        fieldname: string(),
+        originalname: string(),
+        encoding: string(),
+        mimetype: string(),
+        size: number(),
+    }).array()
 }
 
 const params = {
@@ -34,7 +44,7 @@ const params = {
     })
 }
 
-export const createListingSchema = object({ ...payload })
+export const createListingSchema = object({ ...payload, ...files })
 
 export const getListingByIdSchema = object({ ...params })
 

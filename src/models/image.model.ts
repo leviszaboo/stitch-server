@@ -1,10 +1,8 @@
 import { RowDataPacket } from "mysql2";
 
 export interface ImageInput {
-    image_url: string,
+    s3_key: string,
     listing_id: string
 }
 
-export interface Image extends RowDataPacket, ImageInput {
-    
-}
+export interface Image extends RowDataPacket, ImageInput {}  

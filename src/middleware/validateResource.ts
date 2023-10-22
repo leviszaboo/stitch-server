@@ -6,7 +6,8 @@ const validateResource = (schema: AnyZodObject) => (req: Request, res: Response,
         schema.parse({
             body: req.body,
             query: req.query,
-            params: req.params
+            params: req.params,
+            files: req.files
         });
         next();
     } catch(err: any) {

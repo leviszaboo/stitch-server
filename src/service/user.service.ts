@@ -1,9 +1,11 @@
 import { ResultSetHeader } from "mysql2";
+import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt"
 import { UserInput, User } from "../models/user.model";
 import pool from "../utils/connect";
 import { signJwt, verifyJwt } from "../utils/jwt.utils";
 import NotFoundError from "../errors/NotFoundError";
+import config from "config";
 
 export async function getUserById(id: string) {
     try {
@@ -34,29 +36,21 @@ export async function getUserByEmail(email: string) {
             [email]
         ) 
 
-        if (!user[0]) {
-            throw new NotFoundError("User not found")
-        }
-
         return user[0]
 
     } catch(err: any) {
-        if (err instanceof NotFoundError) {
-            throw err
-        } else {
-            throw new Error(err)
-        }
+        throw new Error(err)
     }
 }
 
 interface AuthResponse {
     user: {
-      userId: string;
-      email: string;
+        userId: string;
+        email: string;
     };
     accessToken: string;
     refreshToken: string;
-  }
+}
 
 export async function loginUser(input: UserInput): Promise<AuthResponse> {
     try {
@@ -68,7 +62,7 @@ export async function loginUser(input: UserInput): Promise<AuthResponse> {
             throw new NotFoundError("User not found.")
         }
 
-        const passwordMatch = await bcrypt.compare(input.password, user.passwordHash)
+        const passwordMatch = await bcrypt.compare(input.password, user.password_hash)
 
         if (!passwordMatch) {
             throw new Error("Incorrect password.")
@@ -80,7 +74,7 @@ export async function loginUser(input: UserInput): Promise<AuthResponse> {
             }, 
             "access",
             {
-                expiresIn: "5m"
+                expiresIn: config.get<string>("accessTokenExpiresIn")
             }
         )
 
@@ -88,7 +82,7 @@ export async function loginUser(input: UserInput): Promise<AuthResponse> {
             { userId: user.user_id }, 
             "refresh",
             {
-                expiresIn: "30m"
+                expiresIn: config.get<string>("refreshTokenExpiresIn")
             }
         )
 
@@ -113,18 +107,22 @@ export async function loginUser(input: UserInput): Promise<AuthResponse> {
 export async function createUser(input: UserInput) {
     try {
         const existingUser = await getUserByEmail(input.email)
-        
-        const id = Date.now().toString()
     
         if (existingUser) {
             throw new Error("User already exists.")
         }
 
-        const passwordHash = await bcrypt.hash(input.password, 10)
+        const userId = uuidv4();
+        const passwordHash = await bcrypt.hash(input.password, 10);
     
         const [userInsertResult] = await pool.query<ResultSetHeader>(
-            "INSERT INTO users VALUES (?, ?, ?)",
-            [id, input.email, passwordHash]
+            `INSERT INTO users (
+                user_id,
+                email,
+                password_hash
+            )
+            VALUES (?, ?, ?)`,
+            [userId, input.email, passwordHash]
         )
     
         if (userInsertResult.affectedRows === 1) {
@@ -143,8 +141,11 @@ export async function createUser(input: UserInput) {
     }
 }   
 
-export async function reissueAccessToken({ refreshToken }: { refreshToken: string }) {
+export async function reissueAccessToken(refreshToken: string) {
+    console.log("token: ", refreshToken)
     const { decoded } = verifyJwt(refreshToken, "refresh");
+
+    console.log(decoded)
 
     if (!decoded) return { 
         newAccessToken: null,
@@ -162,7 +163,7 @@ export async function reissueAccessToken({ refreshToken }: { refreshToken: strin
         { userId: user.user_id }, 
         "refresh",
         {
-            expiresIn: "30m"
+            expiresIn: "1d"
         }
     )
     

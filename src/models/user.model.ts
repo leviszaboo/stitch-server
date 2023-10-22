@@ -8,5 +8,5 @@ export interface UserInput {
 export interface User extends RowDataPacket {
     user_id: string,
     email: string,
-    passwordHash: string
+    password_hash: string
 }

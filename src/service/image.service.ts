@@ -3,24 +3,59 @@ import NotFoundError from "../errors/NotFoundError"
 import { Image, ImageInput } from "../models/image.model"
 import pool from "../utils/connect"
 
+export async function getImageByKey(key: string) {
+    try {
+        const [image] = await pool.query<Image[]>(
+            "SELECT * FROM images WHERE s3_key = ?",
+            [key]
+        ) 
+
+        if (!image[0]) {
+            throw new NotFoundError("Image not found")
+        }
+
+        return image[0]
+
+    } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            throw err
+        } else {
+            throw new Error(err)
+        }
+    }
+}
+
 export async function insertImage(input: ImageInput) {
     const values = [
-        input.image_url,
-        input.listing_id
+        input.listing_id,
+        input.s3_key
     ]
 
     try {
         const [imageInsertResult] = await pool.query<ResultSetHeader>(
-            "INSERT INTO IMAGES (?, ?)",
+            `INSERT INTO IMAGES (
+                listing_id,
+                s3_key
+            )
+            VALUES (?, ?)`,
             values
         )
 
         if (imageInsertResult.affectedRows === 1) {
-            return true
+            console.log("image inserted");
+            try {
+                await getImageByKey(input.s3_key);
+            } catch(err: any) {
+                throw new Error(err)
+            }
         } else {
             throw new Error("Failed to create image.")
         }
+
     } catch(err: any) {
+        if (err instanceof NotFoundError) {
+            throw new Error("Failed to retrieve image.")
+        }
         throw new Error(err);
     }
 }

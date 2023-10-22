@@ -32,11 +32,11 @@ export function verifyJwt(token: string, tokenType: "refresh" | "access",) {
             expired: false,
             decoded,
         };
-      } catch (e: any) {
-        console.error(e);
+      } catch (err: any) {
+        console.log("jwt verification error: ", err);
         return {
             valid: false,
-            expired: e.message === "jwt expired",
+            expired: err.message === "jwt expired",
             decoded: null,
         };
     }
