@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { createListing, getListings, getListingById, getListingsByUserId } from "../service/listing.service";
 import { CreateListingInput, GetListingByIdInput } from "../schema/listing.schema";
 import { ListingInput } from "../models/listing.model";
-import NotFoundError from "../errors/NotFoundError";
+import NotFoundError from "../errors/global/NotFoundError";
 import { GetUserByIdInput } from "../schema/user.schema";
 import { uploadImageToS3 } from "../aws/s3";
 import { insertImage } from "../service/image.service";

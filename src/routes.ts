@@ -25,6 +25,8 @@ export default function routes(app: Express) {
 
     app.get("/api/listings/:listing_id", validateResource(getListingByIdSchema), getListingByIdHandler);
 
+    app.delete("api/listings/:listing_id")
+
     app.post("/api/listings", [requireUser, upload.array('images', 12), validateResource(createListingSchema)], createListingHandler);
 
     app.post("/api/test", upload.array('images', 12), (req, res) => {

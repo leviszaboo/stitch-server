@@ -1,5 +1,5 @@
 import { ResultSetHeader } from "mysql2"
-import NotFoundError from "../errors/NotFoundError"
+import NotFoundError from "../errors/global/NotFoundError"
 import { Image, ImageInput } from "../models/image.model"
 import pool from "../utils/connect"
 

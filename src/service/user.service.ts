@@ -4,8 +4,11 @@ import bcrypt from "bcrypt"
 import { UserInput, User } from "../models/user.model";
 import pool from "../utils/connect";
 import { signJwt, verifyJwt } from "../utils/jwt.utils";
-import NotFoundError from "../errors/NotFoundError";
+import NotFoundError from "../errors/global/NotFoundError";
+import UserNotFoundError from "../errors/user/UserNotFoundError";
 import config from "config";
+import IncorrectPasswordError from "../errors/user/IncorrectPasswordError";
+import EmailExistsError from "../errors/user/EmailExistsError";
 
 export async function getUserById(id: string) {
     try {
@@ -15,17 +18,13 @@ export async function getUserById(id: string) {
         ) 
 
         if (!user[0]) {
-            throw new NotFoundError("User not found")
+            throw new UserNotFoundError("User not found with the provided user ID.")
         }
 
         return { user_id: user[0].user_id, email: user[0].email }
 
     } catch(err: any) {
-        if (err instanceof NotFoundError) {
-            throw err
-        } else {
-            throw new Error(err)
-        }
+        throw err
     }
 }
 
@@ -39,7 +38,7 @@ export async function getUserByEmail(email: string) {
         return user[0]
 
     } catch(err: any) {
-        throw new Error(err)
+        throw err
     }
 }
 
@@ -59,13 +58,13 @@ export async function loginUser(input: UserInput): Promise<AuthResponse> {
         console.log(user)
 
         if (!user) {
-            throw new NotFoundError("User not found.")
+            throw new UserNotFoundError("User not found with the provided email address.")
         }
 
         const passwordMatch = await bcrypt.compare(input.password, user.password_hash)
 
         if (!passwordMatch) {
-            throw new Error("Incorrect password.")
+            throw new IncorrectPasswordError("Incorrect password for the provided email address.")
         }
 
         const token = signJwt(
@@ -96,11 +95,7 @@ export async function loginUser(input: UserInput): Promise<AuthResponse> {
         }
 
     } catch (err: any) {
-        if (err instanceof NotFoundError) {
-            throw err
-        } else {
-            throw new Error(err)
-        }
+        throw err
     }
 }
 
@@ -109,7 +104,7 @@ export async function createUser(input: UserInput) {
         const existingUser = await getUserByEmail(input.email)
     
         if (existingUser) {
-            throw new Error("User already exists.")
+            throw new EmailExistsError("A user account with the provided email address already exists.")
         }
 
         const userId = uuidv4();
@@ -137,7 +132,7 @@ export async function createUser(input: UserInput) {
             throw new Error("Failed to insert the user.");
         }
     } catch (err: any) {
-        throw new Error(err)
+        throw err
     }
 }   
 

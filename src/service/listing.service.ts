@@ -1,7 +1,7 @@
 import { ResultSetHeader } from "mysql2";
 import pool from "../utils/connect";
 import { Listing, ListingInput, ListingReturnData } from "../models/listing.model";
-import NotFoundError from "../errors/NotFoundError";
+import NotFoundError from "../errors/global/NotFoundError";
 import { createListingReturnObject } from "../utils/listing.utils";
 
 export async function getListings(start: number = 0, end: number = 10): Promise<Listing | Listing[]> {
